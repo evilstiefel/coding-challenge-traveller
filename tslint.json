@@ -8,6 +8,9 @@
         "no-console": false,
         "quotemark": {
             "options": ["single"]
+        },
+        "max-line-length": {
+            "options": [180]
         }
     },
     "rulesDirectory": []
