@@ -108,7 +108,12 @@ const labelToNumber = (label: string): number => {
     const neighborMap = new Map<string, Array<{ neighborNumber: number, distance: number }>>();
     parsedData.nodes
       .forEach((node) => nodeInfoMap
-        .set(node.label, { node, distance: (node.label === 'Erde') ? 0 : Number.POSITIVE_INFINITY, visited: (node.label === 'Erde') ? true : false, parent: undefined }));
+        .set(node.label, {
+          distance: (node.label === 'Erde') ? 0 : Number.POSITIVE_INFINITY,
+          node,
+          parent: undefined,
+          visited: (node.label === 'Erde') ? true : false,
+        }));
     parsedData.nodes.forEach((node) => {
       const numLabel = labelToNumber(node.label);
       neighborMap.set(node.label, getNeighbors(numLabel, parsedData.edges));
@@ -131,15 +136,15 @@ const labelToNumber = (label: string): number => {
      */
     while (currentNode !== undefined) {
       const neighbors = neighborMap.get(currentNode.node.label);
-      neighbors.forEach((n) => {
-        const neighbor = { ...nodeInfoMap.get(numberToLabel(n.neighborNumber)) };
-        const distance = currentNode.distance + n.distance;
+      neighbors.forEach((neighborWithDistance) => {
+        const neighbor = nodeInfoMap.get(numberToLabel(neighborWithDistance.neighborNumber));
+        const distance = currentNode.distance + neighborWithDistance.distance;
         const isShorter = neighbor.distance > distance;
         if (isShorter) {
           neighbor.distance = distance;
           neighbor.parent = currentNode.node.label;
+          nodeInfoMap.set(neighbor.node.label, neighbor);
         }
-        nodeInfoMap.set(neighbor.node.label, neighbor);
       });
       currentNode.visited = true;
       /**
@@ -151,6 +156,7 @@ const labelToNumber = (label: string): number => {
       visited.set(labelToNumber(currentNode.node.label), true);
       nodeInfoMap.set(currentNode.node.label, currentNode);
       nextNodes.push(...neighbors);
+      // Hier stellen wir noch einmal sicher, das keine bereits besuchten Knoten in die Liste rutschen
       nextNodes = nextNodes.filter((n) => !visited.has(n.neighborNumber));
       const nextNode = nextNodes.shift();
       if (nextNode) {
