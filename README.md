@@ -1,7 +1,7 @@
 # Installation
 Zum Ausführen wird node-js und npm benötigt, alle benötigten Pakete können per `npm ci` installiert werden.
 # Ausführung
-`npm run watch` kompiliert das Typescript und führt per nodemon den Code
+`npm run watch` kompiliert das Typescript und führt per nodemon den Code aus
 # Ergebnis
 ```
 The shortest path is 7 steps long (not including earth):
