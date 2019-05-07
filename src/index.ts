@@ -118,6 +118,17 @@ const labelToNumber = (label: string): number => {
     let currentNode = nodeInfoMap.get('Erde');
     const visited = new Map<number, boolean>();
     let nextNodes: Array<{ neighborNumber: number, distance: number }> = [];
+    /**
+     * Der Algorithmus ist iterativ implementiert. Solange wir einen aktuellen Knoten
+     * ausgewählt haben, besuchen wir alle seine Nachbarn und berechnen die Kosten zu
+     * diesen. Falls sie geringer sind, als die im Nachbarn gespeicherten, aktualisieren
+     * wir dessen Kosten und setzen einen Zeiger vom Nachbarn auf den aktuellen Knoten.
+     * Wenn wir alle Nachbarn durchgelaufen haben, setzen wir den aktuellen Knoten auf
+     * "besucht" - besuchte Knoten werden nicht erneut angelaufen.
+     * Dann aktualisieren wir ein Array von als nächstes als Ausgangsbasis zu benutzenden
+     * Knoten und wiederholen den Algorithmus, bis wir keine Nachbarn mehr haben, zu denen
+     * wir weiterlaufen können.
+     */
     while (currentNode !== undefined) {
       const neighbors = neighborMap.get(currentNode.node.label);
       neighbors.forEach((n) => {
@@ -131,6 +142,12 @@ const labelToNumber = (label: string): number => {
         nodeInfoMap.set(neighbor.node.label, neighbor);
       });
       currentNode.visited = true;
+      /**
+       * Falls wir beim Ziel angekommen sind, Abbruch der Schleife
+       */
+      if (currentNode.node.label === 'b3-r7-r4nd7') {
+        break;
+      }
       visited.set(labelToNumber(currentNode.node.label), true);
       nodeInfoMap.set(currentNode.node.label, currentNode);
       nextNodes.push(...neighbors);
