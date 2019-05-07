@@ -11,6 +11,7 @@ interface INodeDistance {
   node: IPlanetNode;
   distance: number;
   visited: boolean;
+  parent: string;
 }
 
 interface IPlanetEdge {
@@ -19,7 +20,7 @@ interface IPlanetEdge {
   cost: number;
 }
 
-const getNeighbors = (startingNode: number, edges: IPlanetEdge[]): Array<{neighborNumber: number, distance: number}> => {
+const getNeighbors = (startingNode: number, edges: IPlanetEdge[]): Array<{ neighborNumber: number, distance: number }> => {
   return edges
     .filter((e) => e.source === startingNode || e.target === startingNode)
     .map((n) => {
@@ -28,6 +29,15 @@ const getNeighbors = (startingNode: number, edges: IPlanetEdge[]): Array<{neighb
         neighborNumber: (n.source === startingNode) ? n.target : n.source,
       });
     });
+};
+
+const markNodeVisited = (label: string, mapping: Map<string, INodeDistance>) => {
+  let node = mapping.get(label);
+  node = {
+    ...node,
+    visited: true,
+  };
+  mapping.set(label, node);
 };
 
 const numberToLabel = (nodeNumber: number): string => {
@@ -60,11 +70,11 @@ const labelToNumber = (label: string): number => {
     }
     const parsedData: { nodes: IPlanetNode[], edges: IPlanetEdge[] } = JSON.parse(data);
 
-    const distanceMap = new Map<string, INodeDistance>();
-    const neighborMap = new Map<string, Array<{ neighborNumber: number, distance: number}>>();
+    const nodeInfoMap = new Map<string, INodeDistance>();
+    const neighborMap = new Map<string, Array<{ neighborNumber: number, distance: number }>>();
     parsedData.nodes
-      .forEach((node) => distanceMap
-      .set(node.label, { node, distance: (node.label === 'Erde') ? 0 : Number.POSITIVE_INFINITY, visited: (node.label === 'Erde') ? true : false }));
+      .forEach((node) => nodeInfoMap
+        .set(node.label, { node, distance: (node.label === 'Erde') ? 0 : Number.POSITIVE_INFINITY, visited: (node.label === 'Erde') ? true : false, parent: undefined }));
     parsedData.nodes.forEach((node) => {
       // The node labels are strings, but we need the numbers, so let's fix that
       const numLabel = labelToNumber(node.label);
@@ -72,21 +82,43 @@ const labelToNumber = (label: string): number => {
     });
 
     // Start: 18 (Erde), Ziel: 246 (b3-r7-r4nd7)
-    const currentNode = distanceMap.get('Erde');
-    const nextNodes = neighborMap.get('Erde');
-    while (nextNodes.length !== 0) {
-      const neighbor = nextNodes.shift();
-      const neighborLabel = numberToLabel(neighbor.neighborNumber);
-      const neighborNode = distanceMap.get(neighborLabel);
-      distanceMap.set(neighborLabel, {
-        ...neighborNode,
-        distance: (neighborNode.distance <= neighbor.distance) ? neighborNode.distance : neighbor.distance,
-        visited: true,
+    let currentNode = nodeInfoMap.get('Erde');
+    const visited = new Map<number, boolean>();
+    let nextNodes: Array<{ neighborNumber: number, distance: number }> = [];
+    while (currentNode !== undefined) {
+      const neighbors = neighborMap.get(currentNode.node.label);
+      neighbors.forEach((n) => {
+        const neighbor = {...nodeInfoMap.get(numberToLabel(n.neighborNumber))};
+        const distance = currentNode.distance + n.distance;
+        const isShorter = neighbor.distance > distance;
+        if (isShorter) {
+          console.log(`Shorter, setting parent to ${currentNode.node.label}`);
+          neighbor.distance = distance;
+          neighbor.parent = currentNode.node.label;
+        }
+        nodeInfoMap.set(neighbor.node.label, neighbor);
+        if (numberToLabel(n.neighborNumber) === 'b3-r7-r4nd7') {
+          console.log('got to target');
+        }
       });
-      const unvisitedNeighbors = neighborMap.get(neighborLabel).map((n) => {
-        return distanceMap.get(numberToLabel(n.neighborNumber));
-      }).filter((d) => !d.visited).map((d) => labelToNumber(d.node.label));
-      console.log(unvisitedNeighbors);
+      currentNode.visited = true;
+      visited.set(labelToNumber(currentNode.node.label), true);
+      nodeInfoMap.set(currentNode.node.label, currentNode);
+      nextNodes.push(...neighbors);
+      nextNodes = nextNodes.filter((n) => !visited.has(n.neighborNumber));
+      const nextNode = nextNodes.shift();
+      if (nextNode) {
+        currentNode = nodeInfoMap.get(numberToLabel(nextNode.neighborNumber));
+      } else {
+        currentNode = undefined;
+      }
+    }
+    console.log('finished');
+    let currentLabel = nodeInfoMap.get('b3-r7-r4nd7').node.label;
+
+    while (currentLabel !== undefined) {
+      console.log(currentLabel);
+      currentLabel = nodeInfoMap.get(currentLabel).parent;
     }
   });
 })();

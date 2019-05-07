@@ -9,6 +9,7 @@
         "quotemark": {
             "options": ["single"]
         },
+        "prefer-const": false,
         "max-line-length": {
             "options": [180]
         }
