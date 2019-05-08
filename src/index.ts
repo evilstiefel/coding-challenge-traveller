@@ -10,7 +10,7 @@ import { pairwise, map, scan, takeLast } from 'rxjs/operators';
  * Calculated cost for the path: 2.995687895999458.
  */
 
-const START_LABEL = 'node_50';
+const START_LABEL = 'Erde';
 const TARGET_LABEL = 'b3-r7-r4nd7';
 
 const file = `${__dirname}/../assets/generatedGraph.json`;
