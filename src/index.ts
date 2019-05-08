@@ -10,7 +10,7 @@ import { pairwise, map, scan, takeLast } from 'rxjs/operators';
  * Calculated cost for the path: 2.995687895999458.
  */
 
-const START_LABEL = 'Erde';
+const START_LABEL = 'node_50';
 const TARGET_LABEL = 'b3-r7-r4nd7';
 
 const file = `${__dirname}/../assets/generatedGraph.json`;
@@ -198,7 +198,8 @@ const labelToNumber = (label: string): number => {
        * Diese müssen identisch sein, wenn der Weg so stimmt. Wird hier
        * nicht benutzt, könnte man aber.
        */
-      console.log(`The shortest path is ${path.length - 1} steps long (not including earth): `);
+      console.log(`Going from ${START_LABEL} to ${TARGET_LABEL},`);
+      console.log(`the shortest path is ${path.length - 1} steps long (not including the start): `);
       console.log(path.join(' -> '));
       console.log(`Calculated cost for the path: ${sum}.`);
     });
