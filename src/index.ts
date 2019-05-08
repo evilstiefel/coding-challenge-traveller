@@ -10,6 +10,9 @@ import { pairwise, map, scan, takeLast } from 'rxjs/operators';
  * Calculated cost for the path: 2.995687895999458.
  */
 
+const START_LABEL = 'Erde';
+const TARGET_LABEL = 'b3-r7-r4nd7';
+
 const file = `${__dirname}/../assets/generatedGraph.json`;
 
 interface IPlanetNode {
@@ -109,10 +112,10 @@ const labelToNumber = (label: string): number => {
     parsedData.nodes
       .forEach((node) => nodeInfoMap
         .set(node.label, {
-          distance: (node.label === 'Erde') ? 0 : Number.POSITIVE_INFINITY,
+          distance: (node.label === START_LABEL) ? 0 : Number.POSITIVE_INFINITY,
           node,
           parent: undefined,
-          visited: (node.label === 'Erde') ? true : false,
+          visited: (node.label === START_LABEL) ? true : false,
         }));
     parsedData.nodes.forEach((node) => {
       const numLabel = labelToNumber(node.label);
@@ -120,7 +123,7 @@ const labelToNumber = (label: string): number => {
     });
 
     // Start: 18 (Erde), Ziel: 246 (b3-r7-r4nd7)
-    let currentNode = nodeInfoMap.get('Erde');
+    let currentNode = nodeInfoMap.get(START_LABEL);
     const visited = new Map<number, boolean>();
     let nextNodes: Array<{ neighborNumber: number, distance: number }> = [];
     /**
@@ -150,7 +153,7 @@ const labelToNumber = (label: string): number => {
       /**
        * Falls wir beim Ziel angekommen sind, Abbruch der Schleife
        */
-      if (currentNode.node.label === 'b3-r7-r4nd7') {
+      if (currentNode.node.label === TARGET_LABEL) {
         break;
       }
       visited.set(labelToNumber(currentNode.node.label), true);
@@ -167,11 +170,15 @@ const labelToNumber = (label: string): number => {
     }
 
     // Ermittlung des Pfades durch "Rückwärtslaufen" der Parent-Bezeichner
-    let currentLabel = nodeInfoMap.get('b3-r7-r4nd7').node.label;
+    let currentLabel = nodeInfoMap.get(TARGET_LABEL).node.label;
     let path: string[] = [];
     while (currentLabel !== undefined) {
       path.push(currentLabel);
       currentLabel = nodeInfoMap.get(currentLabel).parent;
+    }
+    if (path.length === 1) {
+      console.log('There exists no such path...');
+      return;
     }
     // Natürlich wollen wir nicht rückwärts fliegen, also drehen wir den Weg um
     path = path.reverse();
